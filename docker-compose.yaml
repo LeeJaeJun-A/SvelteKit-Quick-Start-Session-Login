@@ -1,0 +1,105 @@
+services:
+  backend:
+    container_name: "backend"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./backend/.env
+    environment:
+      - IS_DOCKER=true
+    ports:
+      - "9999:8000"
+    networks:
+      - app-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      iisn_db_mysql:
+        condition: service_healthy
+      iisn_session_db_mysql:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "10"
+
+  frontend:
+    container_name: "frontend"
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "4173:4173"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "10"
+
+  mysql_main:
+    image: mysql:lastest
+    container_name: mysql_main
+    environment:
+      MYSQL_ROOT_PASSWORD: ChangeMePlease
+      MYSQL_DATABASE: main_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user1234
+    volumes:
+      - user-mysql-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "10"
+
+  mysql_session:
+    image: mysql:latest
+    container_name: mysql_session
+    environment:
+      MYSQL_ROOT_PASSWORD: ChangeMePlease
+      MYSQL_DATABASE: session_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user1234
+    volumes:
+      - session-mysql-data:/var/lib/mysql
+    ports:
+      - "3308:3306"
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "10"
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  user-mysql-data:
+  session-mysql-data:

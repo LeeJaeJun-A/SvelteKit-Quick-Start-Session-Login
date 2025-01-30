@@ -1,0 +1,24 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+
+SESSION_EXPIRE_MINUTE = int(os.getenv("SESSION_EXPIRE_MINUTE", 30))
+
+DOCKER_MYSQL_DATABASE_URI = os.getenv("DOCKER_MYSQL_DATABASE_URI")
+MYSQL_DATABASE_URI = os.getenv("MYSQL_DATABASE_URI")
+DOCKER_SESSION_DATABASE_URI = os.getenv("DOCKER_SESSION_DATABASE_URI")
+SESSION_DATABASE_URI = os.getenv("SESSION_DATABASE_URI")
+
+DEFAULT_ROOT_ACCOUNT_ID = os.getenv("DEFAULT_ROOT_ACCOUNT_ID")
+DEFAULT_ROOT_ACCOUNT_PASSWORD = os.getenv("DEFAULT_ROOT_ACCOUNT_PASSWORD")
+
+MAX_FAILURES = int(os.getenv("MAX_FAILURES", 5))
+FAILURE_TRACKING_WINDOW_MINUTES = int(os.getenv("FAILURE_TRACKING_WINDOW_MINUTES", 5))
+REHASH_COUNT_STANDARD = int(os.getenv("REHASH_COUNT_STANDARD", 10))
+
+OPERATION_LOG_RETENTION_PERIOD = int(os.getenv("OPERATION_LOG_RETENTION_PERIOD", 60))
+
+IS_DOCKER = os.getenv("IS_DOCKER", "false")
+
+CORS_ALLOW_ORIGINS = [origin.strip() for origin in os.getenv("CORS_ALLOW_ORIGINS", "").split(",")]

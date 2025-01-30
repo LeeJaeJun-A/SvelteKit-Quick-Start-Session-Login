@@ -1,0 +1,6 @@
+fastapi==0.103.0
+pydantic==2.8.1
+starlette==0.27.0
+sqlalchemy==2.0.16
+bcrypt==4.0.1
+pytz==2023.3
