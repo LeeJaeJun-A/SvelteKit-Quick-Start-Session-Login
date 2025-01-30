@@ -63,8 +63,6 @@
       logs = result.logs;
       totalLogs = result.total;
       totalPages = Math.max(1, Math.ceil(totalLogs / logsPerPage));
-
-      console.log(logs);
     } catch (error) {
       if (error instanceof Error) {
         console.log(error.message);
