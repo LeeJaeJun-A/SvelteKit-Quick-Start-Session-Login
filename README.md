@@ -27,7 +27,7 @@ cd backend
 pip install -r requirements.txt
 ```
 
-2. Configure .env File:
+2. Configure .env File (backend/.env):
    You should update .env file properly. Don't use default value.
    When you use this template to your project, please add .env to .gitignore
 
@@ -76,9 +76,9 @@ cd frontend
 npm install
 ```
 
-2. Configure .env File:
+2. Configure .env File (frontend/.env):
 
-```frontend/.env
+```.env
 # FastAPI URL Configuration
 # URL for the FastAPI application. Change this to the production URL.
 # Replace with your production FastAPI URL
