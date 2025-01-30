@@ -2,15 +2,18 @@
   import { BanOutline } from "flowbite-svelte-icons";
   import { Button, P } from "flowbite-svelte";
   export let title = "Forbidden";
+  export let subtitle = "Invalid Access";
   export let description =
-    "Invalid access. You may have accessed this page through an incorrect link, or you may not have the necessary permissions for this action.";
+    "You may have accessed this page through an incorrect link, or you may not have the necessary permissions for this action.";
   export let btnTitle = "Return to Home";
   export let btnHref = "/";
-  export let mainClass = "h-full flex flex-grow bg-gray-50 dark:bg-gray-900";
+  export let mainClass = "h-screen flex flex-grow bg-gray-50 dark:bg-gray-900";
   export let mainDivClass =
     "flex-grow flex flex-col items-center justify-center px-6 pt-8 mx-auto h-100 pt:mt-0 dark:bg-gray-900";
+  export let h2Class =
+    "mb-3 text-xl font-bold leading-tight text-gray-700";
   export let h1Class =
-    "mb-3 text-2xl font-bold leading-tight text-gray-900 sm:text-4xl lg:text-5xl dark:text-white";
+    "mb-3 text-5xl font-bold leading-tight text-gray-900";
   export let imgDiv = "block md:max-w-lg mb-2";
   export let div2Class = "text-center xl:max-w-4xl";
 </script>
@@ -18,17 +21,20 @@
 <main class={mainClass}>
   <div class={mainDivClass}>
     <div class={imgDiv}>
-      <BanOutline class="h-16 w-16 m-3" color="red" />
+      <BanOutline class="h-16 w-16 m-3 lg:h-28 lg:w-28" color="red" />
     </div>
     <div class={div2Class}>
       <h1 class={h1Class}>
         {title}
       </h1>
-      <P
-        class="mb-5 text-base font-normal text-gray-500 dark:text-gray-400 md:text-lg"
+      <h2 class={h2Class}>
+        {subtitle}
+      </h2>
+      <p
+        class="my-5 text-base font-normal text-gray-500"
       >
         {description}
-      </P>
+      </p>
       <Button href={btnHref}>
         <svg
           class="-ml-1 mr-2 h-5 w-5"

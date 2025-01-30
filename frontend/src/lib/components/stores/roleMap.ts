@@ -3,15 +3,10 @@ interface RoleMap {
 }
 
 export let roleMap: RoleMap = {
-  "/one": ["admin", "user"],
-  "/two": ["admin", "user"],
-  "/three": ["admin", "user"],
+  "/one": ["user"],
+  "/two": ["user"],
+  "/three": ["user"],
   "/settings": ["admin"],
 };
 
-export const protectedRoutes: string[] = [
-  "/dashboards",
-  "/detections",
-  "/rules",
-  "/settings",
-];
+export const protectedRoutes: string[] = ["/one", "/two", "/three", "/setting"];

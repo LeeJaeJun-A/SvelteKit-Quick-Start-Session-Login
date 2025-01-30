@@ -2,6 +2,7 @@ import { env } from "$env/dynamic/private";
 import { redirect } from "@sveltejs/kit";
 import Swal from "sweetalert2";
 import { checkOnlyPageRouteRule } from "$lib/components/utils/roleRoutingChecker.ts";
+import { protectedRoutes } from "$lib/components/stores/roleMap.ts";
 
 export const load = async ({
   fetch,
@@ -13,7 +14,6 @@ export const load = async ({
   url: URL;
 }) => {
   const isLoginPage = url.pathname === "/login";
-  const protectedRoutes: string[] = ["/one", "/two", "/three", "/setting"];
   const isProtected: boolean = protectedRoutes.some((route) =>
     url.pathname.startsWith(route)
   );
@@ -46,16 +46,13 @@ export const load = async ({
         credentials: "include",
       });
 
-      const role = await response.json();
+      const data = await response.json();
 
-      if (!checkOnlyPageRouteRule(url.pathname, role)) {
+      if (!checkOnlyPageRouteRule(url.pathname, data.role)) {
         throw redirect(302, "/forbidden");
       }
-
-      return {
-        role,
-      };
     } catch (error) {
+      console.log(error);
       cookies.delete("session_id", {
         path: "/",
         domain: url.hostname,
