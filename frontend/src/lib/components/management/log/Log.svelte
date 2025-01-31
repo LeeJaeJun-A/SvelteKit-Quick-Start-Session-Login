@@ -206,7 +206,7 @@
               <td class="px-6 py-2.5 text-gray-800" style="width: 15%;"
                 >{log.action}</td
               >
-              <td class="px-6 py-2.5" style="width: 5%;">
+              <td class="px-6 py-2.5 whitespace-nowrap" style="width: 5%;">
                 <span
                   class="px-2 py-1 text-xs rounded-lg text-white"
                   class:bg-green-500={log.success === "True"}
@@ -215,7 +215,7 @@
                   {log.success === "True" ? "성공" : "실패"}
                 </span>
               </td>
-              <td class="px-6 py-2.5 text-gray-800" style="width: 15%;"
+              <td class="px-6 py-2.5 text-gray-800 whitespace-nowrap" style="width: 15%;"
                 >{log.error_code ? log.error_code : "없음"}
               </td>
               <td class="px-6 py-2.5" style="width: 35%;">{log.details}</td>

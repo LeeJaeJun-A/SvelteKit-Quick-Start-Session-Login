@@ -10,8 +10,8 @@
 <nav
   class="fixed flex flex-col justify-between items-start w-72 h-screen border-r border-[#EBEDEF] bg-white z-40"
 >
-  <header class="flex items-center justify-between w-full h-14 p-4 gap-3">
-    <p class="text-xl">TITLE</p>
+  <header class="flex items-center justify-between w-full h-14 p-4 pl-6 gap-3">
+    <p class="text-xl">관리자 페이지</p>
   </header>
   <div
     class="flex flex-col items-start justify-start space-y-2 w-full flex-grow"

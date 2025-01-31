@@ -1,8 +1,11 @@
 <script lang="ts">
   import Swal from "sweetalert2";
   import fastapi from "$lib/components/utils/fastapi.ts";
+  import { EyeOutline, EyeSlashOutline } from "flowbite-svelte-icons";
 
   export let onClose;
+
+  let showPassword = false;
 
   let user_id: string = "";
   let password: string = "";
@@ -51,17 +54,30 @@
           required
         />
       </div>
-      <div>
+      <div class="relative">
         <label for="password" class="block text-xs font-medium text-gray-700"
           >비밀번호</label
         >
         <input
           id="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           bind:value={password}
           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
           required
         />
+        <button
+          type="button"
+          class="absolute inset-y-0 right-0 py-10 pr-3 flex items-center text-sm leading-5 h-full"
+          on:click={() => {
+            showPassword = !showPassword;
+          }}
+        >
+          {#if showPassword}
+            <EyeOutline class="h-5 w-5 text-gray-500" aria-hidden="true" />
+          {:else}
+            <EyeSlashOutline class="h-5 w-5 text-gray-500" aria-hidden="true" />
+          {/if}
+        </button>
       </div>
       <div>
         <label for="role" class="block text-xs font-medium text-gray-700"
