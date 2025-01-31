@@ -37,11 +37,11 @@
 {#if loading}
   <Loading />
 {:else}
-  <div class="flex h-screen overflow-hidden">
+  <div class="flex h-screen">
     <div class="w-72 bg-red-500 shrink-0">
       <MenuBar />
     </div>
-    <div class="flex-1 min-w-0">
+    <div class="flex-1 overflow-x-hidden">
       {#if $mode === options[0]}
         <UserManagement />
       {:else if $mode === options[1]}

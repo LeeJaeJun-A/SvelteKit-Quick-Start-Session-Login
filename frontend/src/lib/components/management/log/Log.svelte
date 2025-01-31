@@ -220,7 +220,7 @@
               </td>
               <td class="px-6 py-2.5" style="width: 35%;">{log.details}</td>
               <td class="px-6 py-2.5" style="width: 20%;"
-                >{log.log_timestamp}</td
+                >{new Date(log.log_timestamp).toLocaleString()}</td
               >
             </tr>
           {/each}
