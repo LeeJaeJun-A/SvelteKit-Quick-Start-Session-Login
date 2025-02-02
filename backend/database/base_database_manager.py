@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.ext.declarative import declarative_base
-from typing import Callable
+from sqlalchemy.orm import declarative_base  
 Base = declarative_base()
 
 
