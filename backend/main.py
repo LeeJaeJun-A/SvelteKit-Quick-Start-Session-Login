@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from contextlib import asynccontextmanager
 import logging
 from backend.config import CORS_ALLOW_ORIGINS
-import unittest.mock
+from backend.middleware import RateLimitMiddleware
 
 
 class UvicornErrorFilter(logging.Filter):
@@ -61,6 +61,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RateLimitMiddleware, max_requests=20, window_seconds=1)
 
 
 @app.get("/")
