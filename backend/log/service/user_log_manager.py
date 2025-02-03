@@ -35,7 +35,7 @@ class UserLogManager(BaseManager):
             new_log = UserLog(
                 user_id=user_id,
                 action=action,
-                success="True" if success else "False",
+                success=success,
                 error_code=error_code,
                 details=details,
             )
@@ -50,7 +50,7 @@ class UserLogManager(BaseManager):
     def get_user_logs(
         self,
         user_id=None,
-        is_error=None,
+        success=None,
         start_date=None,
         end_date=None,
         page=None,
@@ -63,10 +63,8 @@ class UserLogManager(BaseManager):
             if user_id is not None:
                 query = query.filter(UserLog.user_id.like(f"%{user_id}%"))
 
-            if is_error is not None:
-                query = query.filter(
-                    UserLog.success == ("False" if is_error else "True")
-                )
+            if success is not None:
+                query = query.filter(UserLog.success == success)
 
             if start_date is not None:
                 try:

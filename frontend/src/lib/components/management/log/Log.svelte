@@ -20,7 +20,7 @@
 
   let logs: UserLog[] = [];
   let filterUserID = "";
-  let filterIsError: string = "";
+  let filterSuccess: string = "";
   let filterStartDate = today;
   let filterEndDate = "";
 
@@ -35,13 +35,16 @@
     filterStartDate: string | null = null,
     filterEndDate: string | null = null,
     filterUserID: string | null = null,
-    filterIsError: string | null = null
+    filterSuccess: string | null = null
   ) {
     try {
       filterUserID = filterUserID || null;
-      filterIsError = filterIsError || null;
       filterStartDate = filterStartDate || null;
       filterEndDate = filterEndDate || null;
+
+      let successFilter: boolean | null = null;
+      if (filterSuccess === "true") successFilter = true;
+      if (filterSuccess === "false") successFilter = false;
 
       const result = await new Promise<FetchLogResult>((resolve, reject) => {
         fastapi(
@@ -51,7 +54,7 @@
             page: currentPage,
             per_page: logsPerPage,
             user_id: filterUserID,
-            is_error: filterIsError,
+            success: successFilter,
             start_date: filterStartDate,
             end_date: filterEndDate,
           },
@@ -81,7 +84,7 @@
         filterStartDate,
         filterEndDate,
         filterUserID,
-        filterIsError
+        filterSuccess
       );
     }
   }
@@ -145,11 +148,11 @@
         </div>
         <select
           class="text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 h-full"
-          bind:value={filterIsError}
+          bind:value={filterSuccess}
         >
           <option value="">전체</option>
-          <option value="true">에러</option>
-          <option value="false">성공</option>
+          <option value="false">에러</option>
+          <option value="true">성공</option>
         </select>
         <input
           type="date"
@@ -171,7 +174,7 @@
               filterStartDate,
               filterEndDate,
               filterUserID,
-              filterIsError
+              filterSuccess
             );
           }}
         >
@@ -209,13 +212,15 @@
               <td class="px-6 py-2.5 whitespace-nowrap" style="width: 5%;">
                 <span
                   class="px-2 py-1 text-xs rounded-lg text-white"
-                  class:bg-green-500={log.success === "True"}
-                  class:bg-red-500={log.success === "False"}
+                  class:bg-green-500={log.success}
+                  class:bg-red-500={!log.success}
                 >
-                  {log.success === "True" ? "성공" : "실패"}
+                  {log.success ? "성공" : "실패"}
                 </span>
               </td>
-              <td class="px-6 py-2.5 text-gray-800 whitespace-nowrap" style="width: 15%;"
+              <td
+                class="px-6 py-2.5 text-gray-800 whitespace-nowrap"
+                style="width: 15%;"
                 >{log.error_code ? log.error_code : "없음"}
               </td>
               <td class="px-6 py-2.5" style="width: 35%;">{log.details}</td>

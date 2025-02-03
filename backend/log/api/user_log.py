@@ -13,7 +13,7 @@ user_log_manager = UserLogManager()
 @router.get("/user")
 async def get_user_log(
     user_id: Optional[str] = Query(None, description="User ID"),
-    is_error: Optional[bool] = Query(None, description="Filter by error status"),
+    success: Optional[bool] = Query(None, description="Filter by success status"),
     start_date: Optional[str] = Query(
         None, description="Start date for filtering logs"
     ),
@@ -25,7 +25,7 @@ async def get_user_log(
     try:
         logs, total = user_log_manager.get_user_logs(
             user_id=user_id,
-            is_error=is_error,
+            success=success,
             start_date=start_date,
             end_date=end_date,
             page=page,
