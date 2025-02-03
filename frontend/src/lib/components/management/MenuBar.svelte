@@ -77,7 +77,7 @@
             $mode === options[1] ? "text-blue-500" : "text-[#9AA3B1]"
           }`}
         >
-          로그 데이터
+          사용자 로그
         </p>
       </button>
     </ul>
