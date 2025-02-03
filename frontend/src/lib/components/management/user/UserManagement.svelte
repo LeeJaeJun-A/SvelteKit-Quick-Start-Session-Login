@@ -65,8 +65,20 @@
 
   async function handleUnlockUser(userId: string) {
     try {
+      const response = await new Promise<{
+        user_id: string;
+      }>((resolve, reject) => {
+        fastapi("GET", "/session/id", {}, resolve, reject);
+      });
+
       await new Promise<void>((resolve, reject) => {
-        fastapi("POST", `/user/unlock/`, { user_id: userId }, resolve, reject);
+        fastapi(
+          "POST",
+          `/user/unlock`,
+          { user_id: userId, request_user: response.user_id },
+          resolve,
+          reject
+        );
       });
 
       await fetchUsers(
@@ -89,8 +101,20 @@
 
   async function handleLockUser(userId: string) {
     try {
+      const response = await new Promise<{
+        user_id: string;
+      }>((resolve, reject) => {
+        fastapi("GET", "/session/id", {}, resolve, reject);
+      });
+
       await new Promise<void>((resolve, reject) => {
-        fastapi("POST", `/user/lock/`, { user_id: userId }, resolve, reject);
+        fastapi(
+          "POST",
+          `/user/lock`,
+          { user_id: userId, request_user: response.user_id },
+          resolve,
+          reject
+        );
       });
 
       await fetchUsers(
@@ -125,8 +149,20 @@
 
     if (result.isConfirmed) {
       try {
+        const response = await new Promise<{
+          user_id: string;
+        }>((resolve, reject) => {
+          fastapi("GET", "/session/id", {}, resolve, reject);
+        });
+
         await new Promise<void>((resolve, reject) => {
-          fastapi("DELETE", `/user/`, { user_id: userId }, resolve, reject);
+          fastapi(
+            "DELETE",
+            `/user/`,
+            { user_id: userId, request_user: response.user_id },
+            resolve,
+            reject
+          );
         });
 
         initialize_filter();

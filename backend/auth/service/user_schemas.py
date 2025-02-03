@@ -9,11 +9,16 @@ class LoginRequest(BaseRequest):
     password: str
 
 
+class AdminRequest(BaseRequest):
+    request_user: str
+    
 class UserCreateRequest(LoginRequest):
+    request_user: str
     role: str
 
 
 class ChangePasswordRequest(BaseRequest):
+    request_user: str
     old_password: str
     new_password: str
 

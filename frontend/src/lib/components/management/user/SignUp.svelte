@@ -15,13 +15,20 @@
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
 
-    const userData = {
-      user_id,
-      password: hashPassword(password),
-      role,
-    };
-
     try {
+      const response = await new Promise<{
+        user_id: string;
+      }>((resolve, reject) => {
+        fastapi("GET", "/session/id", {}, resolve, reject);
+      });
+
+      const userData = {
+        user_id: user_id,
+        password: hashPassword(password),
+        request_user: response.user_id,
+        role: role,
+      };
+
       await new Promise((resolve, reject) => {
         fastapi("POST", "/user/", userData, resolve, reject);
       });

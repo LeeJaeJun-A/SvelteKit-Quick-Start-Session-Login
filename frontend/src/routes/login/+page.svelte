@@ -1,6 +1,5 @@
 <script lang="ts">
   import Login from "$lib/components/login/login_private/Login.svelte";
-  // import Login from "$lib/components/login/login_public/Login.svelte";
   import Loading from "$lib/components/Loading.svelte";
   import { onMount } from "svelte";
   import { browser } from "$app/environment";

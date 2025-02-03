@@ -106,9 +106,8 @@ def test_lock_account(mock_db_session):
     mock_db_session.query().filter().one_or_none.return_value = mock_user
     mock_db_session.commit = MagicMock()
 
-    result = user_manager.lock_account("test_user")
+    user_manager.lock_account("test_user")
 
-    assert result is True
     assert mock_user.is_locked is True
     mock_db_session.commit.assert_called()
 
@@ -119,9 +118,8 @@ def test_unlock_account(mock_db_session):
     mock_db_session.query().filter().one_or_none.return_value = mock_user
     mock_db_session.commit = MagicMock()
 
-    result = user_manager.unlock_account("test_user")
-
-    assert result is True
+    user_manager.unlock_account("test_user")
+    
     assert mock_user.is_locked is False
     mock_db_session.commit.assert_called()
 
@@ -137,9 +135,8 @@ def test_change_password_success(mock_db_session):
     user_manager.hash_password = MagicMock(return_value=("new_salt", "new_hashed_password"))
     mock_db_session.commit = MagicMock()
 
-    result = user_manager.change_password("test_user", "old_password", "new_password")
+    user_manager.change_password("test_user", "old_password", "new_password")
 
-    assert result is True
     assert mock_user.password == "new_hashed_password"
     mock_db_session.commit.assert_called()
 

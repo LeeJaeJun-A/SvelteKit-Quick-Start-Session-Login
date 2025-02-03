@@ -17,12 +17,19 @@
     event.preventDefault();
 
     try {
+      const response = await new Promise<{
+        user_id: string;
+      }>((resolve, reject) => {
+        fastapi("GET", "/session/id", {}, resolve, reject);
+      });
+
       await new Promise((resolve, reject) => {
         fastapi(
           "POST",
           "/user/change/password",
           {
             user_id: user_id,
+            request_user: response.user_id,
             old_password: hashPassword(old_password),
             new_password: hashPassword(new_password),
           },

@@ -4,6 +4,7 @@ from backend.log.service.user_log_manager import UserLogManager
 from backend.auth.service.session_manager import verify_admin_session
 from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
+    HTTP_400_BAD_REQUEST
 )
 
 router = APIRouter()
@@ -33,11 +34,15 @@ async def get_user_log(
         )
 
         return {"logs": logs, "total": total}
+    except ValueError as e:
+        raise HTTPException(
+        status_code=HTTP_400_BAD_REQUEST,
+        detail=f"{str(e)}",
+        )
     except HTTPException as e:
         raise e
-
     except Exception as e:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected error occurred while retrieving user logs: {str(e)}",
+            detail=f"사용자 로그를 불러오는 중 예기치 않은 오류가 발생했습니다: {str(e)}",
         )

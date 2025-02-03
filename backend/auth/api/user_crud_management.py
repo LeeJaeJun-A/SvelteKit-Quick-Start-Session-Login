@@ -13,7 +13,7 @@ from backend.auth.service.user_schemas import (
     UserCreateRequest,
     UserInfoResponse,
     ChangePasswordRequest,
-    BaseRequest,
+    AdminRequest,
 )
 
 router = APIRouter()
@@ -31,33 +31,37 @@ def create_user(
 
         if success:
             user_log_manager.save_user_log(
-                user_id=data.user_id,
-                action="Create User",
+                user_id=data.request_user,
+                action="사용자 생성",
                 success=True,
                 error_code=None,
-                details=f"User {data.user_id} created with role {data.role}.",
+                details=f"사용자 `{data.user_id}`이(가) `{data.role}` 권한으로 생성되었습니다.",
             )
-            return {"message": "User created successfully"}
         else:
             raise HTTPException(
                 status_code=HTTP_400_BAD_REQUEST,
-                detail="User already exists",
+                detail=f"사용자 `{data.user_id}`이(가) 이미 존재합니다.",
             )
-
     except HTTPException as e:
+        user_log_manager.save_user_log(
+            user_id=data.request_user,
+            action="사용자 생성",
+            success=False,
+            error_code=e.status_code,
+            details=f"사용자 `{data.user_id}` 생성 중 오류가 발생하였습니다. {e.detail}",
+        )
         raise e
-
     except Exception as e:
         user_log_manager.save_user_log(
-            user_id=data.user_id,
-            action="Create User",
+            user_id=data.request_user,
+            action="사용자 생성",
             success=False,
-            error_code="INTERNAL_ERROR",
-            details=f"An unexpected error occurred while creating user {data.user_id}: {str(e)}",
+            error_code=500,
+            details=f"사용자 `{data.user_id}` 생성 중 예기치 못한 오류가 발생하였습니다. {str(e)}",
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred",
+            detail=f"예기치 못한 오류가 발생하였습니다. {str(e)}",
         )
 
 
@@ -96,7 +100,7 @@ def get_user_list(
     except Exception as e:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve user list. {str(e)}",
+            detail=f"사용자 목록을 불러오는 중 오류가 발생했습니다: {str(e)}",
         )
 
 
@@ -106,42 +110,35 @@ def change_password(
     _: None = Depends(verify_admin_session),
 ):
     try:
-        success = user_manager.change_password(
+        user_manager.change_password(
             user_id=data.user_id,
             old_password=data.old_password,
             new_password=data.new_password,
         )
 
-        if success:
-            user_log_manager.save_user_log(
-                user_id=data.user_id,
-                action="Change Password",
-                success=True,
-                error_code=None,
-                details="Password changed successfully.",
-            )
-            return {"message": "비밀번호가 성공적으로 변경되었습니다."}
-        else:
-            user_log_manager.save_user_log(
-                user_id=data.user_id,
-                action="Change Password",
-                success=False,
-                error_code="PASSWORD_CHANGE_FAILED",
-                details="Password change failed.",
-            )
-            raise HTTPException(
-                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="비밀번호 변경에 실패하였습니다.",
-            )
+        user_log_manager.save_user_log(
+            user_id=data.request_user,
+            action="비밀번호 변경",
+            success=True,
+            error_code=None,
+            details=f"사용자 `{data.user_id}`의 비밀번호가 성공적으로 변경되었습니다.",
+        )
     except HTTPException as e:
+        user_log_manager.save_user_log(
+            user_id=data.request_user,
+            action="비밀번호 변경",
+            success=False,
+            error_code=e.status_code,
+            details=f"사용자 `{data.user_id}`의 비밀번호 변경 중 오류가 발생하였습니다. {e.detail}",
+        )
         raise e
     except Exception as e:
         user_log_manager.save_user_log(
-            user_id=data.user_id,
-            action="Change Password",
+            user_id=data.request_user,
+            action="비밀번호 변경",
             success=False,
-            error_code="INTERNAL_ERROR",
-            details=f"Error occurred during password change for {data.user_id}: {str(e)}",
+            error_code=500,
+            details=f"사용자 `{data.user_id}`의 비밀번호 변경 중 예기치 못한 오류가 발생하였습니다. {str(e)}",
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
@@ -150,47 +147,37 @@ def change_password(
 
 
 @router.delete("/")
-def delete_user(
-    data: BaseRequest, _: None = Depends(verify_admin_session)
-):
+def delete_user(data: AdminRequest, _: None = Depends(verify_admin_session)):
     try:
         if data.user_id == DEFAULT_ROOT_ACCOUNT_ID:
             raise HTTPException(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail="기본 루트 계정은 삭제할 수 없습니다.",
             )
-
-        success = user_manager.delete_user(data.user_id)
-        if success:
-            user_log_manager.save_user_log(
-                user_id=data.user_id,
-                action="Delete User",
-                success=True,
-                error_code=None,
-                details=f"User {data.user_id} deleted successfully.",
-            )
-            return {"message": "사용자가 성공적으로 삭제되었습니다."}
-        else:
-            user_log_manager.save_user_log(
-                user_id=data.user_id,
-                action="Delete User",
-                success=False,
-                error_code="USER_DELETE_FAILED",
-                details=f"Failed to delete user {data.user_id}.",
-            )
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST,
-                detail="사용자 삭제에 실패했습니다.",
-            )
+        user_manager.delete_user(data.user_id)
+        user_log_manager.save_user_log(
+            user_id=data.request_user,
+            action="사용자 삭제",
+            success=True,
+            error_code=None,
+            details=f"사용자 `{data.user_id}`이(가) 성공적으로 삭제되었습니다.",
+        )
     except HTTPException as e:
+        user_log_manager.save_user_log(
+            user_id=data.request_user,
+            action="사용자 삭제",
+            success=False,
+            error_code=e.status_code,
+            details=f"사용자 `{data.user_id}` 삭제 중 오류가 발생하였습니다. {e.detail}",
+        )
         raise e
     except Exception as e:
         user_log_manager.save_user_log(
-            user_id=data.user_id,
-            action="Delete User",
+            user_id=data.request_user,
+            action="사용자 삭제",
             success=False,
-            error_code="INTERNAL_ERROR",
-            details=f"Error occurred while deleting user {data.user_id}: {str(e)}",
+            error_code=500,
+            details=f"사용자 `{data.user_id}` 삭제 중 예기치 못한 오류 발생하였습니다. {str(e)}",
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,

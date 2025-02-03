@@ -30,10 +30,10 @@ def login_user(login_data: LoginRequest, response: Response):
         if user:
             user_log_manager.save_user_log(
                 user_id=user_id,
-                action="User Login",
+                action="로그인",
                 success=True,
                 error_code=None,
-                details="User logged in successfully.",
+                details="사용자가 성공적으로 로그인했습니다.",
             )
             session_manager.create_session(
                 response=response,
@@ -43,10 +43,10 @@ def login_user(login_data: LoginRequest, response: Response):
         else:
             user_log_manager.save_user_log(
                 user_id=user_id,
-                action="User Login",
+                action="사용자 로그인",
                 success=False,
-                error_code="INVALID_ACCOUNT",
-                details="Invalid account",
+                error_code=401,
+                details="잘못된 계정 정보로 로그인에 실패하였습니다.",
             )
             raise HTTPException(
                 status_code=HTTP_401_UNAUTHORIZED, detail="잘못된 계정 정보입니다."
@@ -58,12 +58,12 @@ def login_user(login_data: LoginRequest, response: Response):
             user_id=user_id,
             action="User Login",
             success=False,
-            error_code="INTERNAL_ERROR",
-            details=f"An error occurred during login: {e}",
+            error_code=500,
+            details=f"로그인 중 오류가 발생하였습니다. {str(e)}",
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"로그인 중 내부 오류가 발생했습니다. {e}",
+            detail=f"로그인 중 예기치 못한 오류가 발생했습니다. {str(e)}",
         )
 
 
@@ -71,19 +71,14 @@ def login_user(login_data: LoginRequest, response: Response):
 def logout(request: Request, response: Response):
     try:
         session_id = request.cookies.get("session_id")
-
-        if not session_id:
-            return {"message": "No session ID found in cookies"}
-
-        session_manager.delete_session(session_id)
-
-        return {"message": "Logged out successfully"}
+        if session_id:
+            session_manager.delete_session(session_id)
     except HTTPException as e:
         raise e
     except Exception as e:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An internal error occurred {str(e)}",
+            detail=f"로그아웃 중 예기치 못한 오류가 발생했습니다.{str(e)}",
         )
     finally:
         session_manager.delete_session_cookie(

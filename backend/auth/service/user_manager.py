@@ -58,7 +58,10 @@ class UserManager(BaseManager):
 
     def create_user(self, user_id: str, password: str, role: str = "user") -> bool:
         if role not in ["admin", "user"]:
-            return False
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail=f"적절하지 않은 권한입니다.: `{role}`",
+            )
 
         session = self.get_session()
         try:
@@ -111,10 +114,10 @@ class UserManager(BaseManager):
                 if MAX_FAILURES > 0 and user.failed_attempts >= MAX_FAILURES:
                     user_log_manager.save_user_log(
                         user_id=user.id,
-                        action="Login Failed",
+                        action="로그인 실패",
                         success=False,
-                        error_code="ACCOUNT_LOCKED",
-                        details=f"User account {user.id} locked due to too many failed login attempts.",
+                        error_code=403,
+                        details=f"사용자 계정 {user.id}이(가) 너무 많은 로그인 실패로 인해 잠겼습니다.",
                     )
                     user.is_locked = True
                     session.commit()
@@ -143,7 +146,7 @@ class UserManager(BaseManager):
             if not user:
                 raise HTTPException(
                     status_code=HTTP_400_BAD_REQUEST,
-                    detail="사용자를 찾을 수 없습니다.",
+                    detail=f"사용자 `{user_id}`를 찾을 수 없습니다.",
                 )
 
             if user.is_locked:
@@ -223,11 +226,13 @@ class UserManager(BaseManager):
         try:
             user = session.query(User).filter(User.id == user_id).one_or_none()
             if not user:
-                return False
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST,
+                    detail=f"사용자 `{user_id}`를 찾을 수 없습니다.",
+                )
 
             session.delete(user)
             session.commit()
-            return True
         except Exception as e:
             session.rollback()
             raise e
@@ -249,15 +254,20 @@ class UserManager(BaseManager):
         try:
             user = session.query(User).filter(User.id == user_id).one_or_none()
             if not user:
-                return False
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST,
+                    detail=f"사용자 `{user_id}`를 찾을 수 없습니다.",
+                )
 
             if not user.is_locked:
-                return False
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST,
+                    detail=f"사용자 `{user_id}`이(가) 이미 활성화된 계정입니다.",
+                )
 
             user.is_locked = False
             user.failed_attempts = 0
             session.commit()
-            return True
         except Exception as e:
             session.rollback()
             raise e
@@ -269,15 +279,21 @@ class UserManager(BaseManager):
         try:
             user = session.query(User).filter(User.id == user_id).one_or_none()
             if not user:
-                return False
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST,
+                    detail=f"사용자 `{user_id}`를 찾을 수 없습니다.",
+                )
+
 
             if user.is_locked:
-                return False
+                raise HTTPException(
+                    status_code=HTTP_400_BAD_REQUEST,
+                    detail=f"사용자 `{user_id}`이(가) 이미 비활성화된 계정입니다.",
+                )
 
             user.is_locked = True
             user.failed_attempts = 0
             session.commit()
-            return True
         except Exception as e:
             session.rollback()
             raise e
@@ -293,19 +309,19 @@ class UserManager(BaseManager):
             if not user:
                 raise HTTPException(
                     status_code=HTTP_400_BAD_REQUEST,
-                    detail="사용자를 찾을 수 없습니다.",
+                    detail=f"사용자 `{user_id}`를 찾을 수 없습니다.",
                 )
 
             if not self.verify_password(old_password, user.password, user.salt):
                 raise HTTPException(
                     status_code=HTTP_401_UNAUTHORIZED,
-                    detail="현재 비밀번호가 올바르지 않습니다.",
+                    detail=f"사용자 `{user_id}`의 현재 비밀번호가 올바르지 않습니다.",
                 )
 
             if old_password == new_password:
                 raise HTTPException(
                     status_code=HTTP_401_UNAUTHORIZED,
-                    detail="새 비밀번호는 현재 비밀번호와 같을 수 없습니다.",
+                    detail=f"사용자 `{user_id}`의 새 비밀번호는 현재 비밀번호와 같을 수 없습니다.",
                 )
 
             salt, final_hashed_password = self.hash_password(new_password)
@@ -313,7 +329,6 @@ class UserManager(BaseManager):
             user.salt = salt
             user.logins_before_rehash = 0
             session.commit()
-            return True
         except Exception as e:
             session.rollback()
             raise e

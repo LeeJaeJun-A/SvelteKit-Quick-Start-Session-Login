@@ -19,6 +19,7 @@ def validate_session(
 ):
     return {"message": "Session is valid"}
 
+
 @router.get("/session/role")
 def get_uers_info(request: Request):
     session_id = request.cookies.get("session_id")
@@ -31,7 +32,7 @@ def get_uers_info(request: Request):
 
         if not role:
             raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST, detail="Invalid session"
+                status_code=HTTP_400_BAD_REQUEST, detail="유효하지 않은 세션입니다."
             )
 
         return {
@@ -40,4 +41,34 @@ def get_uers_info(request: Request):
     except HTTPException as e:
         raise e
     except Exception as e:
-        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"권한 조회 중 예기치 못한 오류가 발생했습니다: {str(e)}",
+        )
+
+
+@router.get("/session/id")
+def get_uers_info(request: Request):
+    session_id = request.cookies.get("session_id")
+
+    if not session_id:
+        return {"id": ""}
+
+    try:
+        user_id = session_manager.get_user_id(session_id)
+
+        if not user_id:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST, detail="유효하지 않은 세션입니다."
+            )
+
+        return {
+            "user_id": user_id,
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"사용자 ID 조회 중 예기치 못한 오류가 발생했습니다: {str(e)}",
+        )

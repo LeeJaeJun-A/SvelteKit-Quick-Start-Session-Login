@@ -71,14 +71,14 @@ class UserLogManager(BaseManager):
                     start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
                     query = query.filter(UserLog.log_timestamp >= start_date_obj)
                 except ValueError:
-                    raise ValueError("Invalid start_date format. Expected YYYY-MM-DD.")
+                    raise ValueError("잘못된 시작 날짜 형식입니다. YYYY-MM-DD 형식을 사용하세요.")
 
             if end_date is not None:
                 try:
                     end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
                     query = query.filter(UserLog.log_timestamp <= end_date_obj)
                 except ValueError:
-                    raise ValueError("Invalid end_date format. Expected YYYY-MM-DD.")
+                    raise ValueError("잘못된 시작 날짜 형식입니다. YYYY-MM-DD 형식을 사용하세요.")
 
             total = query.count()
 

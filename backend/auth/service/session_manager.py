@@ -160,6 +160,34 @@ class SessionManager(BaseManager):
         finally:
             session.close()
 
+    def get_user_id(self, session_id: str) -> str:
+        session = self.get_session()
+        try:
+            db_session = (
+                session.query(SessionModel)
+                .filter(SessionModel.session_id == session_id)
+                .one_or_none()
+            )
+
+            if not db_session:
+                raise HTTPException(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="세션이 유효하지 않습니다.",
+                )
+
+            if db_session.expires_at < datetime.now():
+                self.delete_session(session_id)
+                raise HTTPException(
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="세션이 만료되었습니다.",
+                )
+
+            return db_session.user_id
+        except Exception as e:
+            raise e
+        finally:
+            session.close()
+            
     def get_role(self, session_id: str) -> str:
         session = self.get_session()
         try:
@@ -171,13 +199,15 @@ class SessionManager(BaseManager):
 
             if not db_session:
                 raise HTTPException(
-                    status_code=HTTP_400_BAD_REQUEST, detail="Session not found"
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="세션이 유효하지 않습니다.",
                 )
 
             if db_session.expires_at < datetime.now():
                 self.delete_session(session_id)
                 raise HTTPException(
-                    status_code=HTTP_401_UNAUTHORIZED, detail="Session expired"
+                    status_code=HTTP_401_UNAUTHORIZED,
+                    detail="세션이 만료되었습니다.",
                 )
 
             return db_session.role
