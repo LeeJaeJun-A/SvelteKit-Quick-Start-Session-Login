@@ -23,7 +23,9 @@ def user_log_manager(mock_session):
 def test_save_user_log(user_log_manager, mock_session):
     mock_session.reset_mock()
 
-    user_log_manager.save_user_log("log_test_user", "LOGIN", True, None, "User logged in")
+    user_log_manager.save_user_log(
+        "log_test_user", "LOGIN", True, None, "User logged in"
+    )
 
     # `session.add()`와 `session.commit()`이 호출되었는지 확인
     mock_session.add.assert_called()
@@ -33,7 +35,7 @@ def test_save_user_log(user_log_manager, mock_session):
     new_log = mock_session.add.call_args[0][0]
     assert new_log.user_id == "log_test_user"
     assert new_log.action == "LOGIN"
-    assert new_log.success == "True"  # 문자열 변환 확인
+    assert new_log.success is True
     assert new_log.error_code is None
     assert new_log.details == "User logged in"
 
@@ -44,7 +46,7 @@ def test_get_user_logs_by_user_id(user_log_manager, mock_session):
 
     # Mock 반환값 설정
     mock_session.query.return_value.filter.return_value.all.return_value = [
-        UserLog(user_id="log_test_user2", action="LOGIN", success="True")
+        UserLog(user_id="log_test_user2", action="LOGIN", success=True)
     ]
     mock_session.query.return_value.filter.return_value.count.return_value = 1
 
@@ -55,74 +57,106 @@ def test_get_user_logs_by_user_id(user_log_manager, mock_session):
     assert len(logs) == 1
     assert total == 1
     assert logs[0].user_id == "log_test_user2"
+    assert logs[0].success is True
     mock_session.query.return_value.filter.assert_called()
 
 
-# 3. 에러 로그 필터링 테스트
-def test_get_user_logs_error_only(user_log_manager, mock_session):
+# 3. 성공 여부 필터링 테스트
+def test_get_user_logs_by_success(user_log_manager, mock_session):
     mock_session.reset_mock()
 
-    # 🔹 filter()가 여러 번 호출될 경우에도 같은 객체를 반환하도록 설정
     mock_query = mock_session.query.return_value
-    mock_filter = MagicMock()
-    mock_filter.all.return_value = [
+    mock_filter1 = mock_query.filter.return_value
+    mock_filter2 = mock_filter1.filter.return_value
+
+    # 로그 데이터 반환 설정
+    mock_filter2.all.return_value = [
         UserLog(user_id="error_log_user", action="LOGIN", success=False)
     ]
-    mock_filter.count.return_value = 1
-    mock_query.filter.side_effect = lambda *args, **kwargs: mock_filter  # 모든 filter() 호출이 동일한 Mock 반환
+    mock_filter2.count.return_value = 1
 
-    logs, total = user_log_manager.get_user_logs(user_id="error_log_user", is_error="True")
+    logs, total = user_log_manager.get_user_logs(
+        user_id="error_log_user", success=False
+    )
 
     assert len(logs) == 1, f"기대한 1개가 아닌 {len(logs)}개 반환됨"
     assert total == 1
-    assert logs[0].success == "False"
+    assert logs[0].success is False
     mock_session.query.return_value.filter.assert_called()
 
 
 # 4. 날짜 범위로 로그 조회 테스트
 def test_get_user_logs_by_date_range(user_log_manager, mock_session):
     mock_session.reset_mock()
-    mock_session.query.return_value.filter.return_value.all.return_value = [
+
+    # Mock 체이닝을 명확히 설정하여 여러 개의 filter() 호출이 가능하도록 함
+    mock_query = mock_session.query.return_value
+    mock_filter = MagicMock()
+
+    # 여러 번의 filter() 호출을 고려하여 같은 mock_filter를 반환하도록 설정
+    mock_query.filter.return_value = mock_filter
+    mock_filter.filter.return_value = mock_filter
+    mock_filter.all.return_value = [
         UserLog(
             user_id="date_log_user",
             action="LOGIN",
-            success="True",
+            success=True,
             log_timestamp=datetime(2024, 1, 15),
         )
     ]
-    mock_session.query.return_value.filter.return_value.count.return_value = 1
+    mock_filter.count.return_value = 1
 
     logs, total = user_log_manager.get_user_logs(
         user_id="date_log_user", start_date="2024-01-01", end_date="2024-01-31"
     )
 
-    assert len(logs) == 1
+    # 검증
+    assert len(logs) == 1, f"기대한 1개가 아닌 {len(logs)}개 반환됨"
     assert total == 1
     assert logs[0].user_id == "date_log_user"
+    assert logs[0].success is True
+
+    # Mock 검증
     mock_session.query.return_value.filter.assert_called()
 
 
-# 5. 페이지네이션 테스트
 def test_get_user_logs_pagination(user_log_manager, mock_session):
     mock_session.reset_mock()
-    mock_session.query.return_value.limit.return_value.offset.return_value.all.return_value = [
-        UserLog(user_id="page_log_user", action="LOGIN", success="True")
+
+    # Mock 체이닝을 명확히 설정하여 여러 개의 filter() 및 페이지네이션이 올바르게 동작하도록 설정
+    mock_query = mock_session.query.return_value
+    mock_filter = MagicMock()
+    mock_pagination = MagicMock()
+
+    # 여러 번의 filter() 호출을 고려하여 같은 mock_filter를 반환하도록 설정
+    mock_query.filter.return_value = mock_filter
+    mock_filter.filter.return_value = mock_filter
+
+    # limit()과 offset()을 설정하여 올바르게 반환되도록 처리
+    mock_filter.limit.return_value = mock_pagination
+    mock_pagination.offset.return_value = mock_pagination
+
+    # 로그 데이터 반환 설정
+    mock_pagination.all.return_value = [
+        UserLog(user_id="page_log_user", action="LOGIN", success=True)
     ]
-    mock_session.query.return_value.count.return_value = 1
+    mock_filter.count.return_value = 1
 
-    logs, total = user_log_manager.get_user_logs(user_id="page_log_user", page=1, per_page=10)
+    logs, total = user_log_manager.get_user_logs(
+        user_id="page_log_user", page=1, per_page=10
+    )
 
-    assert len(logs) == 1
+    # 검증
+    assert len(logs) == 1, f"기대한 1개가 아닌 {len(logs)}개 반환됨"
     assert total == 1
     assert logs[0].user_id == "page_log_user"
-    mock_session.query.return_value.limit.assert_called()
-    mock_session.query.return_value.offset.assert_called()
+    assert logs[0].success is True
 
 
 # 6. 만료된 로그 삭제 테스트
 def test_delete_expired_logs(user_log_manager, mock_session):
     mock_session.reset_mock()
-    expired_log = UserLog(user_id="expired_log_user", action="LOGIN", success="True")
+    expired_log = UserLog(user_id="expired_log_user", action="LOGIN", success=True)
 
     mock_session.query.return_value.filter.return_value.all.return_value = [expired_log]
 
