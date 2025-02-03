@@ -284,7 +284,6 @@ class UserManager(BaseManager):
                     detail=f"사용자 `{user_id}`를 찾을 수 없습니다.",
                 )
 
-
             if user.is_locked:
                 raise HTTPException(
                     status_code=HTTP_400_BAD_REQUEST,
