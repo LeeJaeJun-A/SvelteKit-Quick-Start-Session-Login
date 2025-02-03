@@ -266,16 +266,25 @@
     }
   }
 
+  const handleKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      showCreateUser.set(false);
+      showChangePassword.set(false);
+    }
+  };
+
   onMount(() => {
     fetchUsers(currentPage, usersPerPage);
     if (typeof window !== "undefined") {
       document.addEventListener("click", handleClickOutside);
+      document.addEventListener("keydown", handleKeydown);
     }
   });
 
   onDestroy(() => {
     if (typeof window !== "undefined") {
       document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("keydown", handleKeydown);
     }
   });
 </script>

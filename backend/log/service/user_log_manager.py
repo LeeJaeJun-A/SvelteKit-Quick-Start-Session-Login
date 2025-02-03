@@ -80,11 +80,13 @@ class UserLogManager(BaseManager):
                 except ValueError:
                     raise ValueError("잘못된 시작 날짜 형식입니다. YYYY-MM-DD 형식을 사용하세요.")
 
+            query = query.order_by(UserLog.log_timestamp.desc())
+            
             total = query.count()
 
             if page is not None and per_page is not None:
                 query = query.limit(per_page).offset((page - 1) * per_page)
-
+            
             logs = query.all()
             return logs, total
         except Exception as e:

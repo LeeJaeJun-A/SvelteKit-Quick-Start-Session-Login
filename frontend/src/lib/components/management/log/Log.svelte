@@ -26,7 +26,7 @@
 
   let currentPage = 1;
   let totalLogs = 0;
-  let logsPerPage = 20;
+  let logsPerPage = 25;
   let totalPages = 1;
 
   async function fetchLogs(
