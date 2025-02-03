@@ -107,7 +107,7 @@ class UserManager(BaseManager):
                 minutes=FAILURE_TRACKING_WINDOW_MINUTES
             ):
                 user.failed_attempts += 1
-                if user.failed_attempts >= MAX_FAILURES:
+                if MAX_FAILURES > 0 and user.failed_attempts >= MAX_FAILURES:
                     user_log_manager.save_user_log(
                         user_id=user.id,
                         action="Login Failed",
