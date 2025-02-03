@@ -48,7 +48,11 @@ class UserManager(BaseManager):
                 Base, user_database_uri, docker_user_database_uri, is_docker
             )
             self.create_user(
-                DEFAULT_ROOT_ACCOUNT_ID, DEFAULT_ROOT_ACCOUNT_PASSWORD, "admin"
+                DEFAULT_ROOT_ACCOUNT_ID,
+                hashlib.sha256(
+                    DEFAULT_ROOT_ACCOUNT_PASSWORD.encode("utf-8")
+                ).hexdigest(),
+                "admin",
             )
             self.initialized = True
 
@@ -83,11 +87,8 @@ class UserManager(BaseManager):
         finally:
             session.close()
 
-    def hash_password(self, plain_password: str) -> tuple[str, str]:
+    def hash_password(self, sha256_hashed_password: str) -> tuple[str, str]:
         salt = base64.b64encode(os.urandom(16)).decode("utf-8")
-        sha256_hashed_password = hashlib.sha256(
-            plain_password.encode("utf-8")
-        ).hexdigest()
         salted_hash = f"{salt}{sha256_hashed_password}"
         final_hashed_password = hashlib.sha256(salted_hash.encode("utf-8")).hexdigest()
         return salt, final_hashed_password
@@ -151,10 +152,10 @@ class UserManager(BaseManager):
                     detail="로그인 시도 실패 횟수가 초과되어 계정이 잠겼습니다. 관리자에게 문의해주세요.",
                 )
 
-            if (
-                not self.verify_password(password, user.password, user.salt)
-            ) and user_id != DEFAULT_ROOT_ACCOUNT_ID:
-                self.handle_failed_attempt(user)
+            if not self.verify_password(password, user.password, user.salt):
+                if user_id != DEFAULT_ROOT_ACCOUNT_ID:
+                    self.handle_failed_attempt(user)
+                print("hi")
                 raise HTTPException(
                     status_code=HTTP_401_UNAUTHORIZED,
                     detail="비밀번호가 잘못되었습니다.",

@@ -2,6 +2,7 @@
   import Swal from "sweetalert2";
   import fastapi from "$lib/components/utils/fastapi.ts";
   import { EyeOutline, EyeSlashOutline } from "flowbite-svelte-icons";
+  import { hashPassword } from "$lib/components/utils/hash.ts";
 
   export let onClose;
 
@@ -14,7 +15,11 @@
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
 
-    const userData = { user_id, password, role };
+    const userData = {
+      user_id,
+      password: hashPassword(password),
+      role,
+    };
 
     try {
       await new Promise((resolve, reject) => {
@@ -66,6 +71,7 @@
           required
         />
         <button
+          tabindex="-1"
           type="button"
           class="absolute inset-y-0 right-0 py-10 pr-3 flex items-center text-sm leading-5 h-full"
           on:click={() => {

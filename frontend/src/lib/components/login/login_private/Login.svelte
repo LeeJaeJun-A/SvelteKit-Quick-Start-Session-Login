@@ -38,7 +38,7 @@
       const response = await new Promise<{
         role: string;
       }>((resolve, reject) => {
-        fastapi("GET", "/session/role", {} , resolve, reject);
+        fastapi("GET", "/session/role", {}, resolve, reject);
       });
 
       if (response.role === "admin") {
@@ -103,6 +103,7 @@
           required
         />
         <button
+          tabindex="-1"
           type="button"
           class="absolute inset-y-0 right-0 py-10 pr-3 flex items-center text-sm leading-5 h-full"
           on:click={togglePasswordVisibility}

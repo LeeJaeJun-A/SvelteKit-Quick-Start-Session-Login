@@ -2,6 +2,7 @@
   import Swal from "sweetalert2";
   import fastapi from "$lib/components/utils/fastapi.ts";
   import { EyeOutline, EyeSlashOutline } from "flowbite-svelte-icons";
+  import { hashPassword } from "$lib/components/utils/hash.ts";
 
   export let onClose;
   export let user_id: string;
@@ -22,8 +23,8 @@
           "/user/change/password",
           {
             user_id: user_id,
-            old_password: old_password,
-            new_password: new_password,
+            old_password: hashPassword(old_password),
+            new_password: hashPassword(new_password),
           },
           resolve,
           reject
@@ -72,6 +73,7 @@
           required
         />
         <button
+          tabindex="-1"
           type="button"
           class="absolute inset-y-0 right-0 py-10 pr-3 flex items-center text-sm leading-5 h-full"
           on:click={() => {
@@ -98,6 +100,7 @@
           required
         />
         <button
+          tabindex="-1"
           type="button"
           class="absolute inset-y-0 right-0 py-10 pr-3 flex items-center text-sm leading-5 h-full"
           on:click={() => {
